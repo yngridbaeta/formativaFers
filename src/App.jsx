@@ -8,6 +8,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CadastroDisciplina } from "./Paginas/CadastroDisciplinas";
 import { Menu } from "./Componentes/Menu";
 import { Ambiente } from "./Paginas/Ambiente";
+import { CadastroAmbiente } from "./Paginas/CadastroAmbiente";
 function App() {
   return (
     <Router>
@@ -20,6 +21,7 @@ function App() {
         <Route path="/conteudo" element={<Conteudo />} /> 
         <Route path="/cadastroDisciplina" element={<CadastroDisciplina />} /> 
         <Route path="/ambientes" element={<Ambiente/>} />
+        <Route path="/cadastroAmbiente" element={<CadastroAmbiente/>} />
       </Routes>
       <Rodape />
     </Router>

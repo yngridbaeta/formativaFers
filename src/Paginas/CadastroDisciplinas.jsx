@@ -15,9 +15,18 @@ export function CadastroDisciplina() {
     useEffect(() => {
         const fetchProfessores = async () => {
             try {
-                const response = await axios.get('http://127.0.0.1:8000/api/professores/');
-                setProfessores(response.data);
-                console.log(response.data)
+                const token = localStorage.getItem("access");
+
+                const response = await axios.get('http://127.0.0.1:8000/api/funcionario/', {
+                    headers: {
+                        Authorization: `Bearer ${token}` // Passando o token no header
+                    }
+                });
+
+                // criando uma variavel para filtrar apenas gestores, e nao professores + gestores
+                const professoresFiltrados = response.data.filter(professor => professor.categoria === 'P');
+
+                setProfessores(professoresFiltrados);
             } catch (error) {
                 console.error('Erro ao buscar professores:', error);
             }
@@ -32,28 +41,27 @@ export function CadastroDisciplina() {
         const token = localStorage.getItem("access");
       
         try {
-          await axios.post(
-            'http://localhost:8000/api/disciplina/',
-            {
-              nome,
-              curso,
-              cargaHoraria,
-              descricao,
-              professor
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${token}`  // <- Aqui está o token
-              }
-            }
-          );
+            await axios.post(
+                'http://localhost:8000/api/disciplina/',
+                {
+                nome,
+                curso,
+                cargaHoraria,
+                descricao,
+                professor
+                },
+                {
+                headers: {
+                    Authorization: `Bearer ${token}`  // <- Aqui está o token
+                }
+                }
+            );
       
           navigate('/conteudo');
         } catch (error) {
           console.error('Erro ao cadastrar disciplina:', error);
         }
       };
-      
 
     return (
         <div className={estilos.container}>
@@ -96,8 +104,8 @@ export function CadastroDisciplina() {
                     value={professor}
                     onChange={(e) => setProfessor(e.target.value)}
                     className={estilos.input}
-                    required
-                >
+                    required>
+                        
                     <option value="">Selecione um professor</option>
                     {professores.map((p) => (
                         <option key={p.id} value={p.id}>{p.username}</option>
