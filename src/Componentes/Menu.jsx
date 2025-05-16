@@ -10,46 +10,48 @@ export function Menu() {
     return (
         <div className={estilos.conteiner}>
             <div className={estilos.cardContainer}>
-                <h2 className={estilos.titulo}>Categorias</h2>
-                <div className={estilos.grid}>
+            <h2 className={estilos.titulo}>Categorias</h2>
 
-                    <Link to="/professores">
-                        <div className={estilos.item}>
-                            <img src={professoresIcon} alt="Professores" />
-                            <span>Professores</span>
-                        </div> 
-                    </Link>
+                    <div className={estilos.grid}>
+
+                        <Link to="/professores">
+                            <div className={estilos.item}>
+                                <img src={professoresIcon} alt="Professores" />
+                                <span>Professores</span>
+                            </div> 
+                        </Link>
+                        
+                        <Link to="/gestores">
+                            <div className={estilos.item}>
+                                <img src={gestoresIcon} alt="Gestores" />
+                                <span>Gestores</span>
+                            </div>
+                        </Link>
                     
-                    <Link to="/gestores">
-                        <div className={estilos.item}>
-                            <img src={gestoresIcon} alt="Gestores" />
-                            <span>Gestores</span>
-                        </div>
-                    </Link>
-                   
 
-                    <Link to="/disciplinas" className={estilos.link}>
-                        <div className={estilos.item}>
-                            <img src={disciplinaIcon} alt="Disciplina" />
-                            <span>Disciplinas</span>
-                        </div>
-                    </Link>
+                        <Link to="/disciplinas" className={estilos.link}>
+                            <div className={estilos.item}>
+                                <img src={disciplinaIcon} alt="Disciplina" />
+                                <span>Disciplinas</span>
+                            </div>
+                        </Link>
 
-                    <Link to="/ambientes">
-                        <div className={estilos.item}>
-                            <img src={ambienteIcon} alt="Ambiente" />
-                            <span>Ambientes</span>
-                        </div>
-                    </Link>
+                        <Link to="/ambientes">
+                            <div className={estilos.item}>
+                                <img src={ambienteIcon} alt="Ambiente" />
+                                <span>Ambientes</span>
+                            </div>
+                        </Link>
 
-                    <Link to="/salas">
-                        <div className={estilos.item}>
-                            <img src={salaIcon} alt="Sala" />
-                            <span>Salas</span>
-                        </div>
-                    </Link>
-                    
-                </div>
+                        <Link to="/salas">
+                            <div className={estilos.item}>
+                                <img src={salaIcon} alt="Sala" />
+                                <span>Salas</span>
+                            </div>
+                        </Link>
+
+                    </div>
+        
             </div>
         </div>
     );

@@ -1,17 +1,17 @@
 /* Menu principal */
-.conteiner{
+.conteiner {
     width: 100%;
-    min-height: 80vh;
+    min-height: 75vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(to top, #f5f7fa, #e0efff); /* Gradiente suave azul */
+    background: linear-gradient(to bottom, #f5f7fa, #e0efff);
     padding: 60px 20px;
 }
 
 .cardContainer {
     width: 100%;
-    max-width: 900px;
+    max-width: 1600px; /* Limitar largura máxima */
     background-color: #ffffff;
     border-radius: 24px;
     padding: 40px;
@@ -22,19 +22,27 @@
     text-align: center;
 }
 
+.cards {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
 .titulo {
     font-size: 25px;
-    color: #4a6d8c; 
+    color: #4a6d8c;
     font-family: 'Georgia', serif;
-    margin-bottom: 40px;
+    margin-bottom: 10px;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
 }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(5, 1fr);  /* 5 cards por linha */
     gap: 30px;
+    width: 100%;
+    justify-content: center;
 }
 
 .item {
@@ -43,7 +51,7 @@
     align-items: center;
     justify-content: center;
     gap: 20px;
-    padding: 30px;
+    padding: 70px; /* Ajustei o padding para dar mais espaço aos cards */
     border-radius: 16px;
     background-color: #ffffff;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
@@ -51,11 +59,14 @@
     cursor: pointer;
     font-family: 'Helvetica Neue', sans-serif;
     color: #5a5a5a;
+    min-width: 250px; /* Tamanho mínimo para os cards */
+    height: 300px; /* Definir altura mínima para os cards */
+    justify-content: space-between; /* Ajusta o conteúdo dentro do card */
 }
 
 .item:hover {
     transform: translateY(-8px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12); 
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
 }
 
 .item img {
@@ -66,16 +77,38 @@
     transition: transform 0.3s ease;
 }
 
-
 .item span {
     font-size: 18px;
     font-weight: 600;
-    color: #4a6d8c; 
+    color: #4a6d8c;
     text-align: center;
     margin-top: 10px;
     transition: color 0.3s ease;
 }
 
+a{
+        text-decoration: none;
+}
+
 .item:hover span {
-    color: #2e4765; 
+    color: #2e4765;
+}
+
+/* Responsividade */
+@media (max-width: 1200px) {
+    .grid {
+        grid-template-columns: repeat(3, 1fr);  /* 3 cards por linha em telas médias */
+    }
+}
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);  /* 2 cards por linha em telas menores */
+    }
+}
+
+@media (max-width: 480px) {
+    .grid {
+        grid-template-columns: 1fr;  /* 1 card por linha em telas muito pequenas (celulares) */
+    }
 }

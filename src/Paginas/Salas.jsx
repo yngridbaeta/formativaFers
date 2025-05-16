@@ -3,12 +3,16 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import ConfirmarExclusao from "../Componentes/Confirmarexclusao";
 import Lixeira from '../assets/delete.png';
+import Lapis from '../assets/pencil.png'
 import estilos from './Salas.module.css';
+import EditarSala from "../Componentes/EditarSala";
 
 export function Sala() {
   const [Salas, setSalas] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false); // Estado do modal
-  const [itemToDelete, setItemToDelete] = useState(null); // Sala a ser deletada
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Estado para controle do modal de edição
+  const [itemToDelete, setItemToDelete] = useState(null); // Item selecionado para exclusão
+  const [itemToEdit, setItemToEdit] = useState(null); // Item selecionado para edição
 
   useEffect(() => {
     const token = localStorage.getItem("access");
@@ -36,6 +40,18 @@ export function Sala() {
     setItemToDelete(null); // Limpa o item
   };
 
+  const openEditModal = (id, nome) => {
+    setItemToEdit({ id, nome });
+    setIsEditModalOpen(true);
+  };
+
+  const closeModals = () => {
+    setIsModalOpen(false);
+    setIsEditModalOpen(false);
+    setItemToDelete(null);
+    setItemToEdit(null);
+  };
+
   const confirmDelete = () => {
     const token = localStorage.getItem("access");
     axios
@@ -51,50 +67,73 @@ export function Sala() {
       .catch((error) => console.error("Erro ao excluir sala", error.response || error));
   };
 
+  const handleEditConfirm = (updatedSala) => {
+    setSalas(Salas.map(sala => sala.id === updatedSala.id ? updatedSala : sala));
+    closeModals();
+  };
+
   return (
     <div className={estilos.container}>
-      <h2 className={estilos.titulo}>Reservas de Salas</h2>
+    <h2 className={estilos.titulo}>Salas</h2>
+  
+    <div style={{ display: 'flex', justifyContent: 'flex-end', width: '80%', maxWidth: '900px', marginBottom: '10px' }}>
+      <Link to="/cadastroSala">
+        <button className={estilos.botaoCadastro}>+ Nova Sala</button>
+      </Link>
+    </div>
+  
+    <div className={estilos.tableContainer}>
+      <table className={estilos.tabela}>
+        <thead>
+          <tr>
+            <th>Nome da Sala</th>
+            <th>Editar</th>
+            <th>Excluir</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Salas.map((sala) => (
+            <tr key={sala.id}>
+              <td>{sala.nome}</td>
 
-      <div className={estilos.tableContainer}>
-        <table className={estilos.tabela}>
-          <thead>
-            <tr>
-              <th>Nome da Sala</th>
-              <th>Editar</th>
-              <th>Excluir</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Salas.map((sala) => (
-              <tr key={sala.id}>
-                <td>{sala.nome}</td>
-                <td>
-
-                </td>
-                <td>
+              <td className={estilos.icone}>
                   <img
-                    src={Lixeira}
-                    alt="Excluir"
-                    onClick={() => openModal(sala.id, sala.nome)} // Abre o modal ao clicar
-                    className={estilos.lixeira}
+                    src={Lapis}
+                    alt="Editar"
+                    onClick={() => openEditModal(sala.id, sala.nome)}
+                    className={estilos.editar}
                   />
                 </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <Link to="/cadastroSala">
-        <button className={estilos.botaoCadastro}>Cadastrar Sala</button>
-      </Link>
-
+              
+              <td className={estilos.icone}>
+                <img
+                  src={Lixeira}
+                  alt="Excluir"
+                  onClick={() => openModal(sala.id, sala.nome)}
+                  className={estilos.lixeira}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  
       <ConfirmarExclusao
         isOpen={isModalOpen}
         onClose={closeModal}
         onConfirm={confirmDelete}
         itemName={itemToDelete ? itemToDelete.nome : ''}
+      /> 
+       {/* Modal de edição */}
+      <EditarSala
+      isOpen={isEditModalOpen}
+      onClose={closeModals}
+      onConfirm={handleEditConfirm}
+      item={itemToEdit}
       />
     </div>
+
+   
   );
 }
