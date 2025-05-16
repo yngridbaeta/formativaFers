@@ -61,3 +61,34 @@
 .botao:hover {
     background-color: #395875;
 }
+.botoesPeriodo {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.botaoPeriodo {
+    padding: 12px 24px;
+    background-color: #d1d1d1; /* Cor cinza */
+    color: #333; /* Cor do texto */
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+}
+
+.botaoPeriodo:hover {
+    background-color: #b0b0b0; /* Cor cinza mais escuro no hover */
+    transform: translateY(-1px); /* Leve efeito de "elevação" */
+}
+
+.botaoPeriodo:focus{
+    background-color: #4a6d8c; 
+    color: white;
+}
+
+.ativo {
+    background-color: #4a6d8c; /* Cor de fundo quando selecionado */
+    color: white;
+}

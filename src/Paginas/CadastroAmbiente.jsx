@@ -9,8 +9,13 @@ export function CadastroAmbiente(){
     const [periodo, setPeriodo] = useState('');
     const [salaReservada, setSalaReservada] = useState('');
     const [professor, setProfessor] = useState('');
+    const [disciplina, setDisciplina] = useState('')
+    
+
     const [professores, setProfessores] = useState([]);
     const [salas, setSalas] = useState([]);
+    const [disciplinas, setDisciplinas] = useState([])
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProfessores = async () => {
@@ -56,6 +61,25 @@ export function CadastroAmbiente(){
         fetchSalas();
     }, [])
 
+    useEffect(() => async () => {
+        const fetchDisciplinas = async () => {
+            try{
+                const token = localStorage.getItem("access");
+
+                const response = await axios.get('http://127.0.0.1:8000/api/disciplina/', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setDisciplinas(response.data);
+                console.log(response.data)
+            } catch(error){
+                console.error('Erro ao buscar salas', error);
+            }
+        };
+        fetchDisciplinas();
+    }, [])
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -70,8 +94,7 @@ export function CadastroAmbiente(){
                     periodo,
                     salaReservada,
                     professor,
-                    professores,
-                    salas
+                    disciplina
                 },
                 {
                     headers:{
@@ -88,7 +111,7 @@ export function CadastroAmbiente(){
     return(
         <div className={estilos.container}>
             <form className={estilos.formulario} onSubmit={handleSubmit}>
-                <h2>Cadastro de Reserva de Ambiente</h2>
+                <h2>Reserva de Ambiente</h2>
 
                 <input 
                     type="date"
@@ -106,9 +129,20 @@ export function CadastroAmbiente(){
                     required
                 />
 
-                {/* <select
-                    value={}
-                /> */}
+                <div className={estilos.periodoContainer}>
+                    <label className={estilos.periodoLabel}>Selecione o período:</label>
+                    <div className={estilos.botoesPeriodo}>
+                        {["Manhã", "Tarde", "Noite"].map((opcao) => (
+                            <button
+                                type="button"
+                                key={opcao}
+                                className={`${estilos.botaoPeriodo} ${periodo === opcao ? estilos.ativo : ''}`}
+                                onClick={() => setPeriodo(opcao)}>
+                                {opcao}
+                            </button>
+                        ))}
+                    </div>
+                </div>
 
                 <select 
                     value={salaReservada}
@@ -134,6 +168,21 @@ export function CadastroAmbiente(){
                     ))}
                 </select>
 
+                <select
+                    value={disciplina}
+                    onChange={(e) => setDisciplina(e.target.value)}
+                    className={estilos.input}
+                    required>
+
+                    <option value="">Selecione uma disciplina</option>
+                    {disciplinas.map((d) => (
+                        <option key={d.id} value={d.id}>{d.nome}</option>
+                    ))}
+                </select>
+
+                <div className={estilos.divBotao}>
+                    <button type="submit" className={estilos.botao}>Reservar Ambiente</button>
+                </div>
             </form>
 
         </div>
