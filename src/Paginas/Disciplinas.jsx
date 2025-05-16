@@ -37,7 +37,6 @@ export function Disciplinas() {
           </div>
         ))}
       </div>
-
       
       <Link to="/cadastroDisciplina">
         <button className="botao-cadastro">Cadastrar Nova Disciplina</button>

@@ -3,7 +3,8 @@ import estilos from './Menu.module.css';
 import professoresIcon from '../assets/professor.png';
 import gestoresIcon from '../assets/gestor.png';
 import disciplinaIcon from '../assets/disciplina.png';
-import ambienteIcon from '../assets/ambiente.png';
+import salaIcon from '../assets/ambiente.png';
+import ambienteIcon from '../assets/school.png';
 
 export function Menu() {
     return (
@@ -11,26 +12,40 @@ export function Menu() {
             <div className={estilos.cardContainer}>
                 <h2 className={estilos.titulo}>Categorias</h2>
                 <div className={estilos.grid}>
-                    <div className={estilos.item}>
-                        <img src={professoresIcon} alt="Professores" />
-                        <span>Professores</span>
-                    </div>
-                    <div className={estilos.item}>
-                        <img src={gestoresIcon} alt="Gestores" />
-                        <span>Gestores</span>
-                    </div>
-                    {/* Link para a página de Disciplina */}
+
+                    <Link to="/professores">
+                        <div className={estilos.item}>
+                            <img src={professoresIcon} alt="Professores" />
+                            <span>Professores</span>
+                        </div> 
+                    </Link>
+                    
+                    <Link to="/gestores">
+                        <div className={estilos.item}>
+                            <img src={gestoresIcon} alt="Gestores" />
+                            <span>Gestores</span>
+                        </div>
+                    </Link>
+                   
+
                     <Link to="/disciplinas" className={estilos.link}>
                         <div className={estilos.item}>
                             <img src={disciplinaIcon} alt="Disciplina" />
-                            <span>Disciplina</span>
+                            <span>Disciplinas</span>
                         </div>
                     </Link>
 
                     <Link to="/ambientes">
                         <div className={estilos.item}>
                             <img src={ambienteIcon} alt="Ambiente" />
-                            <span>Ambiente</span>
+                            <span>Ambientes</span>
+                        </div>
+                    </Link>
+
+                    <Link to="/salas">
+                        <div className={estilos.item}>
+                            <img src={salaIcon} alt="Sala" />
+                            <span>Salas</span>
                         </div>
                     </Link>
                     

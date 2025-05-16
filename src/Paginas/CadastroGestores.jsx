@@ -3,7 +3,7 @@ import estilos from './Cadastros.module.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-export function CadastroProfessor() {
+export function CadastroGestor() {
     const [nome, setNome] = useState('');
     const [ni, setNi] = useState('');
     const [email, setEmail] = useState('');
@@ -21,28 +21,7 @@ export function CadastroProfessor() {
         e.preventDefault();
     
         const token = localStorage.getItem("access");
-    
-        // Convertendo 'ni' para inteiro
-        const niNumber = parseInt(ni, 10);
-    
-        // Verificando se a conversão foi bem-sucedida
-        if (isNaN(niNumber)) {
-            console.error("O número de identificação (NI) é inválido.");
-            return;
-        }
-    
-        // Adicionando um log para verificar os dados
-        console.log("Dados enviados:", {
-            username,
-            nome,
-            ni: niNumber, // Envia como número
-            categoria: 'P',
-            email,
-            telefone,
-            dataNascimento,
-            dataContratacao
-        });
-    
+      
         try {
             await axios.post(
                 'http://localhost:8000/api/funcionario/',
@@ -51,7 +30,7 @@ export function CadastroProfessor() {
                     password,
                     nome,
                     ni,
-                    categoria: 'P',
+                    categoria: 'G',
                     email,
                     telefone,
                     dataNascimento,
@@ -66,7 +45,7 @@ export function CadastroProfessor() {
     
             navigate('/conteudo');
         } catch (error) {
-            console.error('Erro ao cadastrar professor', error);
+            console.error('Erro ao cadastrar Gestor', error);
         }
     };
     
@@ -74,7 +53,7 @@ export function CadastroProfessor() {
     return (
         <div className={estilos.container}>
             <form className={estilos.formulario} onSubmit={handleSubmit}>
-                <h2 className={estilos.titulo}>Cadastro de Professor</h2>
+                <h2 className={estilos.titulo}>Cadastro de Gestor</h2>
 
                 <input 
                     type="text"
@@ -96,7 +75,7 @@ export function CadastroProfessor() {
 
                 <input 
                     type="text"
-                    placeholder="Nome do professor"
+                    placeholder="Nome do Gestor"
                     value={nome}
                     onChange={(e) => setNome(e.target.value)}
                     className={estilos.input}
@@ -105,7 +84,7 @@ export function CadastroProfessor() {
 
                 <input 
                     type="number"
-                    placeholder="Número de Identificação (NI)"
+                    placeholder="Número de Identificação"
                     value={ni}
                     onChange={(e) => setNi(e.target.value)}
                     className={estilos.input}
@@ -149,7 +128,7 @@ export function CadastroProfessor() {
                 />
 
                  <div className={estilos.divBotao}>
-                    <button type="submit" className={estilos.botao}>Cadastrar Professor</button>
+                    <button type="submit" className={estilos.botao}>Cadastrar Gestor</button>
                 </div>
             </form>
         </div>
