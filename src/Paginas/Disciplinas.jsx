@@ -5,6 +5,7 @@ import ConfirmarExclusao from "../Componentes/Confirmarexclusao";
 import Lixeira from '../assets/delete.png';
 import Lapis from '../assets/pencil.png';
 import estilos from './Salas.module.css';
+import EditarDisciplina from "../Componentes/EditarDisciplina";
 
 export function Disciplinas() {
   const [Disciplinas, setDisciplinas] = useState([]);
@@ -40,10 +41,10 @@ export function Disciplinas() {
     setItemToDelete(null); // Limpa o item
   };
 
-  const openEditModal = (id, nome) => {
-    setItemToEdit({ id, nome });
+ const openEditModal = (disciplina) => {
+    setItemToEdit(disciplina);
     setIsEditModalOpen(true);
-  };
+  } ;
 
   const closeModals = () => {
     setIsModalOpen(false);
@@ -102,16 +103,16 @@ export function Disciplinas() {
                     <td>{disciplina.curso}</td>
                     <td>{disciplina.cargaHoraria} horas</td>
                     <td>{disciplina.descricao}</td>
-                    <td>{disciplina.professor}</td>
-                    
+                    <td>{disciplina.professor}</td> 
+
                     <td className={estilos.icone}>
-                        <img
-                          src={Lapis}
-                          alt="Editar"
-                          onClick={() => openEditModal(disciplina.id, disciplina.nome)}
-                          className={estilos.editar}
-                        />
-                      </td>
+                      <img
+                        src={Lapis}
+                        alt="Editar"
+                        onClick={() => openEditModal(disciplina)} 
+                        className={estilos.editar}
+                      />
+                    </td>
                     
                     <td className={estilos.icone}>
                       <img
@@ -127,6 +128,19 @@ export function Disciplinas() {
             </table>
           </div>
 
+          <ConfirmarExclusao
+            isOpen={isModalOpen}
+            onClose={closeModal}
+            onConfirm={confirmDelete}
+            itemName={itemToDelete ? itemToDelete.nome : ''}
+          /> 
+
+          <EditarDisciplina
+            isOpen={isEditModalOpen}
+            onClose={closeModals}
+            onConfirm={handleEditConfirm}
+            item={itemToEdit}
+          />
     </div>
   );
 }

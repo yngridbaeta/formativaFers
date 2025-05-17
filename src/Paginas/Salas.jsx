@@ -127,10 +127,10 @@ export function Sala() {
       /> 
        {/* Modal de edição */}
       <EditarSala
-      isOpen={isEditModalOpen}
-      onClose={closeModals}
-      onConfirm={handleEditConfirm}
-      item={itemToEdit}
+        isOpen={isEditModalOpen}
+        onClose={closeModals}
+        onConfirm={handleEditConfirm}
+        item={itemToEdit}
       />
     </div>
 
