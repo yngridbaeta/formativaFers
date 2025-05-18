@@ -1,48 +1,64 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import estilos from './EditarSala.module.css'; // Pode renomear depois
+import estilos from './EditarSala.module.css'; // Pode ser renomeado depois
 
 const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
-    const [nome, setNome] = useState('');
+    const [nome, setNome] = useState(''); // Nome do professor
+    const [username, setUsername] = useState(''); // Username (login) do professor
     const [registro, setRegistro] = useState('');
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState(''); // Email do professor
     const [telefone, setTelefone] = useState('');
     const [dataNascimento, setDataNascimento] = useState('');
     const [dataContratacao, setDataContratacao] = useState('');
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [password, setPassword] = useState(''); // Para o caso de editar a senha
 
+    // Carregar dados para o modal
     useEffect(() => {
         if (isOpen && item) {
-            setNome(item.nome ?? '');
+            setNome(item.nome ?? ''); // Usando item.nome como nome
+            setUsername(item.username ?? ''); // Usando item.username para o campo de login
             setRegistro(item.ni ?? '');
-            setEmail(item.email ?? '');
+            setEmail(item.email ?? ''); // Não vamos alterar o email se não for modificado
             setTelefone(item.telefone ?? '');
-            setDataNascimento(item.dataNascimento ?? '');
-            setDataContratacao(item.dataContratacao ?? '');
-            setUsername(item.username ?? '');
-            setPassword(''); // Não preencher senha existente por segurança
+
+            // Formatar as datas corretamente
+            const formatDate = (dateStr) => {
+                if (!dateStr) return '';
+                const date = new Date(dateStr);
+                return date.toISOString().split('T')[0]; // Retorna só o "YYYY-MM-DD"
+            };
+
+            setDataNascimento(formatDate(item.dataNascimento));
+            setDataContratacao(formatDate(item.dataContratacao));
+            setPassword(''); // Por segurança, não preencher a senha inicialmente
         }
-    }, [isOpen, item]);
+    }, [isOpen, item]); // Certifique-se de que o item seja atualizado
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const token = localStorage.getItem("access");
 
+        // A senha atual é recuperada do item.password
+        const currentPassword = item.password; // Supondo que a senha original esteja em 'item.password'
+
+        // O payload vai incluir a senha atual, a menos que o usuário tenha alterado
+        const payload = {
+            nome, // Nome do professor
+            username, // Username do professor
+            ni: parseInt(registro, 10), // Certifique-se de que o formato de "registro" seja o esperado pela API
+            email,
+            telefone,
+            dataNascimento,
+            dataContratacao,
+            categoria: 'P',
+            // Inclui a senha apenas se o campo password não estiver vazio
+            ...(password && { password }) // Se password tiver algum valor, ele será incluído no payload
+        };
+
         try {
-            const response = await axios.put(
+            const response = await axios.patch(
                 `http://localhost:8000/api/funcionario/${item.id}`,
-                {
-                    username,
-                    password, // Agora incluído no PUT
-                    nome,
-                    ni: parseInt(registro, 10),
-                    email,
-                    telefone,
-                    dataNascimento,
-                    dataContratacao,
-                    categoria: 'P'
-                },
+                payload,
                 {
                     headers: { Authorization: `Bearer ${token}` }
                 }
@@ -51,11 +67,7 @@ const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
             onConfirm(response.data);
             onClose();
         } catch (error) {
-            if (error.response) {
-                console.error('Erro ao editar professor', error.response.data);
-            } else {
-                console.error('Erro desconhecido', error);
-            }
+            console.error('Erro ao editar professor', error.response?.data || error);
         }
     };
 
@@ -67,24 +79,6 @@ const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
                 <h3>Editar Professor</h3>
                 <form onSubmit={handleSubmit}>
                     <div className={estilos.formGroup}>
-                        <label htmlFor="username">Nome de Usuário:</label>
-                        <input
-                            id="username"
-                            type="text"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-
-                        <label htmlFor="password">Senha:</label>
-                        <input
-                            id="password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-
                         <label htmlFor="nome">Nome:</label>
                         <input
                             id="nome"
@@ -94,10 +88,19 @@ const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
                             required
                         />
 
-                        <label htmlFor="registro">Registro (NI):</label>
+                        <label htmlFor="username">Username (Login):</label>
+                        <input
+                            id="username"
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                        />
+
+                        <label htmlFor="registro">Registro:</label>
                         <input
                             id="registro"
-                            type="number"
+                            type="text"
                             value={registro}
                             onChange={(e) => setRegistro(e.target.value)}
                             required
@@ -115,7 +118,7 @@ const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
                         <label htmlFor="telefone">Telefone:</label>
                         <input
                             id="telefone"
-                            type="text"
+                            type="tel"
                             value={telefone}
                             onChange={(e) => setTelefone(e.target.value)}
                             required
@@ -137,6 +140,14 @@ const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
                             value={dataContratacao}
                             onChange={(e) => setDataContratacao(e.target.value)}
                             required
+                        />
+
+                        <label htmlFor="password">Nova Senha (Deixe em branco se não quiser alterar):</label>
+                        <input
+                            id="password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
 

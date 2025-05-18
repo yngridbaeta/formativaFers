@@ -39,7 +39,7 @@ export function Menu() {
                         <Link to="/ambientes">
                             <div className={estilos.item}>
                                 <img src={ambienteIcon} alt="Ambiente" />
-                                <span>Ambientes</span>
+                                <span>Reserva de Ambientes</span>
                             </div>
                         </Link>
 

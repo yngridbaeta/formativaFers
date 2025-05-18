@@ -1,27 +1,34 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import estilos from './EditarSala.module.css'; // Pode renomear depois
+import estilos from './EditarSala.module.css'; // Pode ser renomeado depois
 
-const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
+const EditarGestores = ({ isOpen, onClose, onConfirm, item }) => {
     const [nome, setNome] = useState('');
+    const [username, setUsername] = useState('');
     const [registro, setRegistro] = useState('');
     const [email, setEmail] = useState('');
     const [telefone, setTelefone] = useState('');
     const [dataNascimento, setDataNascimento] = useState('');
     const [dataContratacao, setDataContratacao] = useState('');
-    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
     useEffect(() => {
         if (isOpen && item) {
             setNome(item.nome ?? '');
+            setUsername(item.username ?? '');
             setRegistro(item.ni ?? '');
             setEmail(item.email ?? '');
             setTelefone(item.telefone ?? '');
-            setDataNascimento(item.dataNascimento ?? '');
-            setDataContratacao(item.dataContratacao ?? '');
-            setUsername(item.username ?? '');
-            setPassword(''); // Não preencher senha existente por segurança
+
+            const formatDate = (dateStr) => {
+                if (!dateStr) return '';
+                const date = new Date(dateStr);
+                return date.toISOString().split('T')[0];
+            };
+
+            setDataNascimento(formatDate(item.dataNascimento));
+            setDataContratacao(formatDate(item.dataContratacao));
+            setPassword('');
         }
     }, [isOpen, item]);
 
@@ -29,20 +36,25 @@ const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
         e.preventDefault();
         const token = localStorage.getItem("access");
 
+        const payload = {
+            nome,
+            username,
+            ni: parseInt(registro, 10),
+            email,
+            telefone,
+            dataNascimento,
+            dataContratacao,
+            categoria: 'G',
+        };
+
+        if (password.trim() !== '') {
+            payload.password = password;
+        }
+
         try {
-            const response = await axios.put(
+            const response = await axios.patch(
                 `http://localhost:8000/api/funcionario/${item.id}`,
-                {
-                    username,
-                    password, // Agora incluído no PUT
-                    nome,
-                    ni: parseInt(registro, 10),
-                    email,
-                    telefone,
-                    dataNascimento,
-                    dataContratacao,
-                    categoria: 'P'
-                },
+                payload,
                 {
                     headers: { Authorization: `Bearer ${token}` }
                 }
@@ -51,11 +63,7 @@ const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
             onConfirm(response.data);
             onClose();
         } catch (error) {
-            if (error.response) {
-                console.error('Erro ao editar professor', error.response.data);
-            } else {
-                console.error('Erro desconhecido', error);
-            }
+            console.error('Erro ao editar gestor', error.response?.data || error);
         }
     };
 
@@ -64,27 +72,9 @@ const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
     return (
         <div className={estilos.overlay}>
             <div className={estilos.modal}>
-                <h3>Editar Professor</h3>
+                <h3>Editar Gestor</h3>
                 <form onSubmit={handleSubmit}>
                     <div className={estilos.formGroup}>
-                        <label htmlFor="username">Nome de Usuário:</label>
-                        <input
-                            id="username"
-                            type="text"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-
-                        <label htmlFor="password">Senha:</label>
-                        <input
-                            id="password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-
                         <label htmlFor="nome">Nome:</label>
                         <input
                             id="nome"
@@ -94,10 +84,19 @@ const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
                             required
                         />
 
-                        <label htmlFor="registro">Registro (NI):</label>
+                        <label htmlFor="username">Username (Login):</label>
+                        <input
+                            id="username"
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                        />
+
+                        <label htmlFor="registro">Registro:</label>
                         <input
                             id="registro"
-                            type="number"
+                            type="text"
                             value={registro}
                             onChange={(e) => setRegistro(e.target.value)}
                             required
@@ -115,7 +114,7 @@ const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
                         <label htmlFor="telefone">Telefone:</label>
                         <input
                             id="telefone"
-                            type="text"
+                            type="tel"
                             value={telefone}
                             onChange={(e) => setTelefone(e.target.value)}
                             required
@@ -138,6 +137,14 @@ const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
                             onChange={(e) => setDataContratacao(e.target.value)}
                             required
                         />
+
+                        <label htmlFor="password">Nova Senha (Deixe em branco se não quiser alterar):</label>
+                        <input
+                            id="password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
                     </div>
 
                     <div className={estilos.botoes}>
@@ -154,4 +161,4 @@ const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
     );
 };
 
-export default EditarProfessores;
+export default EditarGestores;

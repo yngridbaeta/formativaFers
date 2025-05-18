@@ -5,6 +5,7 @@ import ConfirmarExclusao from "../Componentes/Confirmarexclusao";
 import Lixeira from '../assets/delete.png';
 import Lapis from '../assets/pencil.png';
 import estilos from './Salas.module.css';
+import EditarAmbiente from "../Componentes/EditarAmbiente";
 
 export function Ambiente() {
     const [Ambientes, setAmbientes] = useState([]);
@@ -136,26 +137,14 @@ export function Ambiente() {
                 onConfirm={confirmDelete}
                 itemName={itemToDelete ? itemToDelete.nome : ''}
             />
+
+            <EditarAmbiente
+                isOpen={isEditModalOpen}
+                onClose={closeModals}
+                onConfirm={handleEditConfirm}
+                item={itemToEdit}
+            />
         </div>
-           
     );
 }
 
- {/* <div>
-                {ambientes.map((ambientes) => (
-                    <div key={ambientes.id}>
-                        <h3>{ambientes.nome}</h3>
-                        <p>{ambientes.dataInicio}</p>
-                        <p>{ambientes.dataTermino}</p>
-                        <p>{ambientes.periodo}</p>
-                        <p>{ambientes.salaReservada}</p>
-                        <p>{ambientes.professor}</p>
-                        <p>{ambientes.disciplina}</p>
-                    </div>
-                    ))}
-            </div>
-
-            <Link to="/cadastroAmbiente">
-                <button className="botao-cadastro"> Cadastrar Nova Reserva </button>
-            </Link>
-        </div> */}
