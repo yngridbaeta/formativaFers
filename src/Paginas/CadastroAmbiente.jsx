@@ -102,7 +102,7 @@ export function CadastroAmbiente(){
                     }
                 }
             );
-        navigate('/conteudo');
+        navigate('/ambientes');
         } catch (error){
             console.error('Erro ao cadastrar disciplina', error);
         }

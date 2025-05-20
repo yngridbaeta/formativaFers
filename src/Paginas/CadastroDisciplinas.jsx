@@ -57,7 +57,7 @@ export function CadastroDisciplina() {
                 }
             );
       
-          navigate('/conteudo');
+          navigate('/disciplinas');
         } catch (error) {
           console.error('Erro ao cadastrar disciplina:', error);
         }

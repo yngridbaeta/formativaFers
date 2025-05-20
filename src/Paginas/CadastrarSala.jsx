@@ -47,7 +47,7 @@ export function CadastroSala() {
             );
 
             // Navegando para outra página após o cadastro
-            navigate('/conteudo');
+            navigate('/salas');
         } catch (error) {
             console.error('Erro ao cadastrar Sala:', error);
         }

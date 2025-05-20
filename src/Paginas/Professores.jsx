@@ -76,8 +76,8 @@ export function Professores() {
             <h2>Professores</h2>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', width: '80%', maxWidth: '900px', marginBottom: '10px' }}>
-                <Link to="/cadastroAmbiente">
-                    <button className={estilos.botaoCadastro}>+ Nova Reserva</button>
+                <Link to="/cadastroProfessor">
+                    <button className={estilos.botaoCadastro}>+ Novo Professor</button>
                 </Link>
             </div>
 
@@ -135,10 +135,6 @@ export function Professores() {
                 </table>
             </div>
 
-            <Link to="/cadastroProfessor">
-                <button className={estilos.botaoCadastro}>Cadastrar professor</button>
-            </Link>
-
             <ConfirmarExclusao
                 isOpen={isModalOpen}
                 onClose={closeModal}
@@ -146,7 +142,6 @@ export function Professores() {
                 itemName={itemToDelete ? itemToDelete.nome : ''}
             />
 
-            {/* Modal de edição */}
             <EditarProfessores
                 isOpen={isEditModalOpen}
                 onClose={closeModals}

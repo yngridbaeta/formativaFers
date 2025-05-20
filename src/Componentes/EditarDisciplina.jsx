@@ -1,91 +1,94 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import estilos from './EditarSala.module.css'; // Pode renomear depois
+import estilos from './EditarSala.module.css';
 
-const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
-    const [nome, setNome] = useState('');
-    const [registro, setRegistro] = useState('');
-    const [email, setEmail] = useState('');
-    const [telefone, setTelefone] = useState('');
-    const [dataNascimento, setDataNascimento] = useState('');
-    const [dataContratacao, setDataContratacao] = useState('');
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+const EditarDisciplina = ({ isOpen, onClose, onConfirm, item }) => {
+    const [nome, setNome] = useState(item?.nome ?? '');
+    const [curso, setCurso] = useState(item?.curso ?? '');
+    const [cargaHoraria, setCargaHoraria] = useState(item?.cargaHoraria ?? '');
+    const [descricao, setDescricao] = useState(item?.descricao ?? '');
+    const [professor, setProfessor] = useState(''); // Aqui inicia com vazio
+    const [professores, setProfessores] = useState([]);
 
+    // Quando o modal é aberto, atualizar os valores
     useEffect(() => {
         if (isOpen && item) {
             setNome(item.nome ?? '');
-            setRegistro(item.ni ?? '');
-            setEmail(item.email ?? '');
-            setTelefone(item.telefone ?? '');
-            setDataNascimento(item.dataNascimento ?? '');
-            setDataContratacao(item.dataContratacao ?? '');
-            setUsername(item.username ?? '');
-            setPassword(''); // Não preencher senha existente por segurança
+            setCurso(item.curso ?? '');
+            setCargaHoraria(item.cargaHoraria ?? '');
+            setDescricao(item.descricao ?? '');
+            
+            // Se o professor é uma string (nome), buscamos o ID correspondente
+            if (typeof item.professor === 'string') {
+                const professor = professores.find(p => p.username === item.professor); // Encontramos o professor pelo nome
+                setProfessor(professor ? professor.id.toString() : ''); // Setamos o ID do professor no estado
+            } else {
+                // Se já é um objeto com ID, usamos o ID diretamente
+                setProfessor(item.professor?.id?.toString() ?? '');
+            }
         }
-    }, [isOpen, item]);
+    }, [isOpen, item, professores]); // Certifique-se que os professores estão carregados
 
-    const handleSubmit = async (e) => {
+    // Carregar a lista de professores
+    useEffect(() => {
+        const fetchProfessores = async () => {
+            try {
+                const token = localStorage.getItem("access");
+                const response = await axios.get('http://127.0.0.1:8000/api/funcionario/', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                const professoresFiltrados = response.data.filter(prof => prof.categoria === 'P');
+                setProfessores(professoresFiltrados);
+            } catch (error) {
+                console.error('Erro ao buscar professores:', error);
+            }
+        };
+
+        fetchProfessores();
+    }, []);
+
+    // Lidar com a submissão do formulário de edição
+    const handleSubmit = (e) => {
         e.preventDefault();
         const token = localStorage.getItem("access");
 
-        try {
-            const response = await axios.put(
-                `http://localhost:8000/api/funcionario/${item.id}`,
-                {
-                    username,
-                    password, // Agora incluído no PUT
-                    nome,
-                    ni: parseInt(registro, 10),
-                    email,
-                    telefone,
-                    dataNascimento,
-                    dataContratacao,
-                    categoria: 'P'
-                },
-                {
-                    headers: { Authorization: `Bearer ${token}` }
+        axios.put(
+            `http://localhost:8000/api/disciplina/${item.id}`,
+            {
+                nome,
+                curso,
+                cargaHoraria: parseInt(cargaHoraria),
+                descricao,
+                professor: parseInt(professor) // Certifique-se de que o valor é numérico
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
                 }
-            );
+            }
+        )
+        .then((response) => {
+            console.log("Resposta do backend:", response.data);
 
             onConfirm(response.data);
             onClose();
-        } catch (error) {
-            if (error.response) {
-                console.error('Erro ao editar professor', error.response.data);
-            } else {
-                console.error('Erro desconhecido', error);
-            }
-        }
+        })
+        .catch((error) => console.error('Erro ao editar disciplina', error.response || error));
     };
 
-    if (!isOpen || !item) return null;
+    // Fechar o modal se não estiver aberto
+    if (!isOpen) return null;
 
     return (
         <div className={estilos.overlay}>
             <div className={estilos.modal}>
-                <h3>Editar Professor</h3>
+                <h3>Editar Disciplina</h3>
                 <form onSubmit={handleSubmit}>
                     <div className={estilos.formGroup}>
-                        <label htmlFor="username">Nome de Usuário:</label>
-                        <input
-                            id="username"
-                            type="text"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-
-                        <label htmlFor="password">Senha:</label>
-                        <input
-                            id="password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-
-                        <label htmlFor="nome">Nome:</label>
+                        <label htmlFor="nome">Nome da Disciplina</label>
                         <input
                             id="nome"
                             type="text"
@@ -93,59 +96,55 @@ const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
                             onChange={(e) => setNome(e.target.value)}
                             required
                         />
-
-                        <label htmlFor="registro">Registro (NI):</label>
                         <input
-                            id="registro"
-                            type="number"
-                            value={registro}
-                            onChange={(e) => setRegistro(e.target.value)}
-                            required
-                        />
-
-                        <label htmlFor="email">Email:</label>
-                        <input
-                            id="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-
-                        <label htmlFor="telefone">Telefone:</label>
-                        <input
-                            id="telefone"
                             type="text"
-                            value={telefone}
-                            onChange={(e) => setTelefone(e.target.value)}
+                            placeholder="Curso"
+                            value={curso}
+                            onChange={(e) => setCurso(e.target.value)}
+                            className={estilos.input}
                             required
                         />
-
-                        <label htmlFor="dataNascimento">Data de Nascimento:</label>
                         <input
-                            id="dataNascimento"
-                            type="date"
-                            value={dataNascimento}
-                            onChange={(e) => setDataNascimento(e.target.value)}
+                            type="number"
+                            placeholder="Carga Horária"
+                            value={cargaHoraria}
+                            onChange={(e) => setCargaHoraria(e.target.value)}
+                            className={estilos.input}
                             required
                         />
-
-                        <label htmlFor="dataContratacao">Data de Contratação:</label>
                         <input
-                            id="dataContratacao"
-                            type="date"
-                            value={dataContratacao}
-                            onChange={(e) => setDataContratacao(e.target.value)}
+                            type="text"
+                            placeholder="Descrição"
+                            value={descricao}
+                            onChange={(e) => setDescricao(e.target.value)}
+                            className={estilos.input}
                             required
                         />
+                        <select
+                            value={professor}
+                            onChange={(e) => {
+                                console.log("Novo professor selecionado:", e.target.value);
+                                setProfessor(e.target.value);
+                            }}
+                            className={estilos.input}
+                            required
+                            >
+
+                            <option value="">Selecione um professor</option>
+                            {professores.map((p) => (
+                                <option key={p.id} value={p.id.toString()}>
+                                    {p.username}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
-                    <div className={estilos.botoes}>
-                        <button type="submit" className={estilos.salvar}>
-                            Salvar
-                        </button>
-                        <button type="button" onClick={onClose} className={estilos.cancelar}>
+                    <div className={estilos.buttons}>
+                        <button type="button" className={estilos.cancelButton} onClick={onClose}>
                             Cancelar
+                        </button>
+                        <button type="submit" className={estilos.confirmButton}>
+                            Salvar
                         </button>
                     </div>
                 </form>
@@ -154,4 +153,4 @@ const EditarProfessores = ({ isOpen, onClose, onConfirm, item }) => {
     );
 };
 
-export default EditarProfessores;
+export default EditarDisciplina;

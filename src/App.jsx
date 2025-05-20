@@ -35,7 +35,6 @@ function App() {
         <Route path="/cadastroGestor" element={<CadastroGestor/>} />
         <Route path="/salas" element={<Sala/>} />
         <Route path="/cadastroSala" element={<CadastroSala/>} />
-
       </Routes>
       <Rodape />
     </Router>

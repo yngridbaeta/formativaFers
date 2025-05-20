@@ -64,7 +64,7 @@ export function CadastroProfessor() {
                 }
             );
     
-            navigate('/conteudo');
+            navigate('/professores');
         } catch (error) {
             console.error('Erro ao cadastrar professor', error);
         }

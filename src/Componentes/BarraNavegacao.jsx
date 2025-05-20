@@ -1,14 +1,12 @@
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import estilos from './BarraNavegacao.module.css';
 
 export function BarraNavegacao() {
     return (
         <nav className={estilos.conteiner}>
             <ul>
-                <li><Link to="/conteudo" className={estilos.active}>Home</Link></li>
-                <li><Link to="/">Login</Link></li>
-                <li><Link to="#">Visão</Link></li>
-                <li><Link to="#">Valores</Link></li>
+                <li><NavLink to="/conteudo" className={({ isActive }) => isActive ? estilos.active : undefined}>Home</NavLink></li>
+                <li><NavLink to="/" className={({ isActive }) => isActive ? estilos.active : undefined}>Login</NavLink></li>
             </ul>
         </nav>
     );

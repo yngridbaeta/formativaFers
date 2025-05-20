@@ -43,7 +43,7 @@ export function CadastroGestor() {
                 }
             );
     
-            navigate('/conteudo');
+            navigate('/gestores');
         } catch (error) {
             console.error('Erro ao cadastrar Gestor', error);
         }
