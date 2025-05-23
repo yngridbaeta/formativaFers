@@ -147,12 +147,14 @@ const EditarGestores = ({ isOpen, onClose, onConfirm, item }) => {
                         />
                     </div>
 
-                    <div className={estilos.botoes}>
-                        <button type="submit" className={estilos.salvar}>
-                            Salvar
-                        </button>
-                        <button type="button" onClick={onClose} className={estilos.cancelar}>
+                    <div className={estilos.buttons}>
+                        
+                        <button type="button" onClick={onClose} className={estilos.cancelButton}>
                             Cancelar
+                        </button>
+
+                        <button type="submit" className={estilos.confirmButton}>
+                            Salvar
                         </button>
                     </div>
                 </form>

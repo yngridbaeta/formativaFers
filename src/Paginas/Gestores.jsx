@@ -13,19 +13,59 @@ export function Gestores() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
     const [itemToEdit, setItemToEdit] = useState(null);
+    const [categoriaUsuario, setCategoriaUsuario] = useState(null);
 
-    useEffect(() => {
-        const token = localStorage.getItem("access");
-        if (token) {
-            axios.get(`http://localhost:8000/api/funcionario/`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            .then((response) => {
-                setGestores(response.data);
-            })
-            .catch((error) => console.error("Erro ao carregar gestores", error.response || error));
+
+    // useEffect(() => {
+    //     const token = localStorage.getItem("access");
+    //     if (token) {
+    //         axios.get(`http://localhost:8000/api/funcionario/`, {
+    //             headers: { Authorization: `Bearer ${token}` },
+    //         })
+    //         .then((response) => {
+    //             setGestores(response.data);
+    //         })
+    //         .catch((error) => console.error("Erro ao carregar gestores", error.response || error));
+    //     }
+    // }, []);
+
+    function parseJwt(token) {
+        if (!token) return null;
+        try {
+          const payload = token.split('.')[1];
+          const decoded = atob(payload); 
+          return JSON.parse(decoded); 
+        } catch (e) {
+          console.error("Erro ao decodificar token:", e);
+          return null;
         }
-    }, []);
+      }
+      
+      useEffect(() => {
+        const token = localStorage.getItem("access");
+      
+        if (token) {
+          const decoded = parseJwt(token);
+          const userId = decoded?.user_id;
+      
+          // Carrega as salas
+          axios.get("http://localhost:8000/api/funcionario/", {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+          .then((response) => setGestores(response.data))
+          .catch((error) => console.error("Erro ao carregar salas", error.response || error));
+      
+          if (userId) {
+            axios.get(`http://localhost:8000/api/funcionario/${userId}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            })
+            .then((res) => setCategoriaUsuario(res.data.categoria))
+            .catch((err) => console.error("Erro ao buscar categoria do usuário", err.response || err));
+          }
+        } else {
+          console.log("Token não encontrado");
+        }
+      }, []);
 
     const formatDate = (date) => {
         const options = { year: "numeric", month: "numeric", day: "numeric" };
@@ -75,6 +115,7 @@ export function Gestores() {
         <div className={estilos.container}>
             <h2>Gestores</h2>
 
+            
             <div style={{ display: 'flex', justifyContent: 'flex-end', width: '80%', maxWidth: '900px', marginBottom: '10px' }}>
                 <Link to="/cadastrogestor">
                     <button className={estilos.botaoCadastro}>+ Novo Gestor</button>

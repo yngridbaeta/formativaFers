@@ -92,3 +92,13 @@
     background-color: #4a6d8c; /* Cor de fundo quando selecionado */
     color: white;
 }
+
+.botaoIndisponivel {
+    background-color: #d9534f; /* Cor vermelha para indicar que está indisponível */
+    cursor: not-allowed;
+}
+
+.botao:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

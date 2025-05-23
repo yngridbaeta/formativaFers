@@ -1,4 +1,3 @@
-/* Menu principal */
 .conteiner {
     width: 100%;
     min-height: 75vh;
@@ -11,57 +10,48 @@
 
 .cardContainer {
     width: 100%;
-    max-width: 1600px; /* Limitar largura máxima */
+    max-width: 1600px;
     background-color: #ffffff;
     border-radius: 24px;
     padding: 40px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    gap: 40px;
+    align-items: center;
     text-align: center;
-}
-
-.cards {
-    width: 100%;
-    display: flex;
-    justify-content: center;
+    gap: 20px;
 }
 
 .titulo {
     font-size: 25px;
     color: #4a6d8c;
-    font-family: 'Georgia', serif;
     margin-bottom: 10px;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
 .grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);  /* 5 cards por linha */
-    gap: 30px;
-    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
     justify-content: center;
+    gap: 30px;
+    max-width: 1200px;
 }
 
 .item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 20px;
-    padding: 70px; /* Ajustei o padding para dar mais espaço aos cards */
+    justify-content: space-between;
+    padding: 70px;
     border-radius: 16px;
     background-color: #ffffff;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     cursor: pointer;
-    font-family: 'Helvetica Neue', sans-serif;
     color: #5a5a5a;
-    min-width: 250px; /* Tamanho mínimo para os cards */
-    height: 300px; /* Definir altura mínima para os cards */
-    justify-content: space-between; /* Ajusta o conteúdo dentro do card */
+    width: 200px;
+    height: 300px;
 }
 
 .item:hover {
@@ -86,29 +76,10 @@
     transition: color 0.3s ease;
 }
 
-a{
-        text-decoration: none;
-}
-
 .item:hover span {
     color: #2e4765;
 }
 
-/* Responsividade */
-@media (max-width: 1200px) {
-    .grid {
-        grid-template-columns: repeat(3, 1fr);  /* 3 cards por linha em telas médias */
-    }
-}
-
-@media (max-width: 768px) {
-    .grid {
-        grid-template-columns: repeat(2, 1fr);  /* 2 cards por linha em telas menores */
-    }
-}
-
-@media (max-width: 480px) {
-    .grid {
-        grid-template-columns: 1fr;  /* 1 card por linha em telas muito pequenas (celulares) */
-    }
+a {
+    text-decoration: none;
 }

@@ -3,33 +3,25 @@ import axios from "axios";
 import estilos from './EditarSala.module.css';
 
 const EditarDisciplina = ({ isOpen, onClose, onConfirm, item }) => {
-    const [nome, setNome] = useState(item?.nome ?? '');
-    const [curso, setCurso] = useState(item?.curso ?? '');
-    const [cargaHoraria, setCargaHoraria] = useState(item?.cargaHoraria ?? '');
-    const [descricao, setDescricao] = useState(item?.descricao ?? '');
-    const [professor, setProfessor] = useState(''); // Aqui inicia com vazio
+    const [nome, setNome] = useState('');
+    const [curso, setCurso] = useState('');
+    const [cargaHoraria, setCargaHoraria] = useState('');
+    const [descricao, setDescricao] = useState('');
+    const [professor, setProfessor] = useState('');
     const [professores, setProfessores] = useState([]);
 
-    // Quando o modal é aberto, atualizar os valores
+    // Carrega os dados da disciplina e o professor atual
     useEffect(() => {
         if (isOpen && item) {
             setNome(item.nome ?? '');
             setCurso(item.curso ?? '');
             setCargaHoraria(item.cargaHoraria ?? '');
             setDescricao(item.descricao ?? '');
-            
-            // Se o professor é uma string (nome), buscamos o ID correspondente
-            if (typeof item.professor === 'string') {
-                const professor = professores.find(p => p.username === item.professor); // Encontramos o professor pelo nome
-                setProfessor(professor ? professor.id.toString() : ''); // Setamos o ID do professor no estado
-            } else {
-                // Se já é um objeto com ID, usamos o ID diretamente
-                setProfessor(item.professor?.id?.toString() ?? '');
-            }
+            setProfessor(item.professor?.toString() ?? ''); // item.professor é ID
         }
-    }, [isOpen, item, professores]); // Certifique-se que os professores estão carregados
+    }, [isOpen, item]);
 
-    // Carregar a lista de professores
+    // Carrega a lista de professores
     useEffect(() => {
         const fetchProfessores = async () => {
             try {
@@ -40,17 +32,19 @@ const EditarDisciplina = ({ isOpen, onClose, onConfirm, item }) => {
                     }
                 });
 
-                const professoresFiltrados = response.data.filter(prof => prof.categoria === 'P');
+                const professoresFiltrados = response.data.filter(p => p.categoria === 'P');
                 setProfessores(professoresFiltrados);
             } catch (error) {
                 console.error('Erro ao buscar professores:', error);
             }
         };
 
-        fetchProfessores();
-    }, []);
+        if (isOpen) {
+            fetchProfessores();
+        }
+    }, [isOpen]);
 
-    // Lidar com a submissão do formulário de edição
+    // Submissão do formulário
     const handleSubmit = (e) => {
         e.preventDefault();
         const token = localStorage.getItem("access");
@@ -62,7 +56,7 @@ const EditarDisciplina = ({ isOpen, onClose, onConfirm, item }) => {
                 curso,
                 cargaHoraria: parseInt(cargaHoraria),
                 descricao,
-                professor: parseInt(professor) // Certifique-se de que o valor é numérico
+                professor: parseInt(professor)
             },
             {
                 headers: {
@@ -72,14 +66,14 @@ const EditarDisciplina = ({ isOpen, onClose, onConfirm, item }) => {
         )
         .then((response) => {
             console.log("Resposta do backend:", response.data);
-
             onConfirm(response.data);
             onClose();
         })
-        .catch((error) => console.error('Erro ao editar disciplina', error.response || error));
+        .catch((error) => {
+            console.error('Erro ao editar disciplina', error.response || error);
+        });
     };
 
-    // Fechar o modal se não estiver aberto
     if (!isOpen) return null;
 
     return (
@@ -96,6 +90,8 @@ const EditarDisciplina = ({ isOpen, onClose, onConfirm, item }) => {
                             onChange={(e) => setNome(e.target.value)}
                             required
                         />
+                        
+                        <label htmlFor="curso">Nome do Curso</label>
                         <input
                             type="text"
                             placeholder="Curso"
@@ -104,6 +100,8 @@ const EditarDisciplina = ({ isOpen, onClose, onConfirm, item }) => {
                             className={estilos.input}
                             required
                         />
+
+                        <label htmlFor="cargaHoraria">Carga Horária</label>
                         <input
                             type="number"
                             placeholder="Carga Horária"
@@ -112,6 +110,7 @@ const EditarDisciplina = ({ isOpen, onClose, onConfirm, item }) => {
                             className={estilos.input}
                             required
                         />
+                        <label htmlFor="descrição">Descrição</label>
                         <input
                             type="text"
                             placeholder="Descrição"
@@ -120,20 +119,18 @@ const EditarDisciplina = ({ isOpen, onClose, onConfirm, item }) => {
                             className={estilos.input}
                             required
                         />
+
+                        <label htmlFor="professor">Professor</label>
                         <select
                             value={professor}
-                            onChange={(e) => {
-                                console.log("Novo professor selecionado:", e.target.value);
-                                setProfessor(e.target.value);
-                            }}
+                            onChange={(e) => setProfessor(e.target.value)}
                             className={estilos.input}
                             required
-                            >
-
+                        >
                             <option value="">Selecione um professor</option>
                             {professores.map((p) => (
                                 <option key={p.id} value={p.id.toString()}>
-                                    {p.username}
+                                    {p.nome}
                                 </option>
                             ))}
                         </select>

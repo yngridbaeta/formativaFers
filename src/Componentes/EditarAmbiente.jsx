@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import estilos from './EditarSala.module.css';
+import Aviso from "../Componentes/Aviso"; 
 
 const EditarAmbiente = ({ isOpen, onClose, onConfirm, item }) => {
     const [dataInicio, setDataInicio] = useState('');
@@ -14,6 +15,10 @@ const EditarAmbiente = ({ isOpen, onClose, onConfirm, item }) => {
     const [professores, setProfessores] = useState([]);
     const [disciplinas, setDisciplinas] = useState([]);
 
+    const [erroModalAberto, setErroModalAberto] = useState(false);
+    const [mensagemErro, setMensagemErro] = useState('');
+    const [isSalaReservada, setIsSalaReservada] = useState(false);
+
     const periodosDisponiveis = [
         { id: 'Manhã', nome: 'Manhã' },
         { id: 'Tarde', nome: 'Tarde' },
@@ -26,107 +31,139 @@ const EditarAmbiente = ({ isOpen, onClose, onConfirm, item }) => {
             setDataTermino(item.dataTermino ?? '');
             setPeriodo(item.periodo ?? '');
 
-            if (typeof item.disciplina === 'string') {
-                const disciplinaObj = disciplinas.find(d => d.nome === item.disciplina);
-                setDisciplina(disciplinaObj ? disciplinaObj.id.toString() : '');
-            } else {
-                setDisciplina(item.disciplina?.id?.toString() ?? '');
+            if (item.professor) {
+                const profId = typeof item.professor === 'object' ? item.professor.id : item.professor;
+                setProfessor(profId?.toString() ?? '');
             }
 
-            if (typeof item.professor === 'string') {
-                const prof = professores.find(p => p.username === item.professor);
-                setProfessor(prof ? prof.id.toString() : '');
-            } else {
-                setProfessor(item.professor?.id?.toString() ?? '');
+            if (item.disciplina) {
+                const discId = typeof item.disciplina === 'object' ? item.disciplina.id : item.disciplina;
+                setDisciplina(discId?.toString() ?? '');
             }
-        }
-    }, [isOpen, item, disciplinas, professores]);
 
-    useEffect(() => {
-        if (isOpen && item && salas.length > 0) {
-            if (typeof item.salaReservada === 'string') {
-                const sala = salas.find(s => s.nome === item.salaReservada);
-                setSala(sala ? sala.id.toString() : '');
-            } else {
-                setSala(item.salaReservada?.id?.toString() ?? '');
+            if (item.salaReservada) {
+                const salaId = typeof item.salaReservada === 'object' ? item.salaReservada.id : item.salaReservada;
+                setSala(salaId?.toString() ?? '');
             }
         }
-    }, [isOpen, item, salas]);
+    }, [isOpen, item, professores, disciplinas, salas]);
 
     useEffect(() => {
-        const fetchProfessores = async () => {
+        const fetchData = async () => {
             try {
                 const token = localStorage.getItem("access");
-                const response = await axios.get('http://127.0.0.1:8000/api/funcionario/', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                const professoresFiltrados = response.data.filter(p => p.categoria === 'P');
-                setProfessores(professoresFiltrados);
+
+                const [profResponse, salaResponse, discResponse] = await Promise.all([
+                    axios.get('http://127.0.0.1:8000/api/funcionario/', { headers: { Authorization: `Bearer ${token}` } }),
+                    axios.get('http://127.0.0.1:8000/api/sala/', { headers: { Authorization: `Bearer ${token}` } }),
+                    axios.get('http://127.0.0.1:8000/api/disciplina/', { headers: { Authorization: `Bearer ${token}` } }),
+                ]);
+
+                setProfessores(profResponse.data.filter(p => p.categoria === 'P'));
+                setSalas(salaResponse.data);
+                setDisciplinas(discResponse.data);
             } catch (error) {
-                console.error('Erro ao buscar professores:', error);
+                console.error('Erro ao buscar dados:', error);
             }
         };
-
-        fetchProfessores();
+        fetchData();
     }, []);
+
+    const verificarReserva = async () => {
+        if (salaReservada && dataInicio && dataTermino && periodo) {
+            try {
+                const token = localStorage.getItem("access");
+                const response = await axios.get('http://127.0.0.1:8000/api/ambiente/', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                const isDataValida = new Date(dataInicio) < new Date(dataTermino);
+                if (!isDataValida) {
+                    setMensagemErro("A data de início não pode ser posterior à data de término.");
+                    setErroModalAberto(true);
+                    return;
+                }
+
+                const salaReservadaNoPeriodo = response.data.some(reserva =>
+                    reserva.id !== item.id &&
+                    reserva.salaReservada === parseInt(salaReservada) &&
+                    new Date(reserva.dataInicio).toDateString() === new Date(dataInicio).toDateString() &&
+                    reserva.periodo === periodo
+                );
+
+                if (salaReservadaNoPeriodo) {
+                    setMensagemErro("A sala já está reservada para este período.");
+                    setErroModalAberto(true);
+                    setIsSalaReservada(true);
+                } else {
+                    setIsSalaReservada(false);
+                }
+            } catch (error) {
+                console.error('Erro ao verificar reserva:', error);
+            }
+        }
+    };
 
     useEffect(() => {
-        const fetchSalas = async () => {
-            try {
-                const token = localStorage.getItem("access");
-                const response = await axios.get('http://127.0.0.1:8000/api/sala/', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setSalas(response.data);
-            } catch (error) {
-                console.error('Erro ao buscar salas:', error);
-            }
-        };
-
-        fetchSalas();
-    }, []);
-
-    useEffect(() => {
-        const fetchDisciplinas = async () => {
-            try {
-                const token = localStorage.getItem("access");
-                const response = await axios.get('http://127.0.0.1:8000/api/disciplina/', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setDisciplinas(response.data);
-            } catch (error) {
-                console.error('Erro ao buscar disciplinas:', error);
-            }
-        };
-
-        fetchDisciplinas();
-    }, []);
+        verificarReserva();
+    }, [salaReservada, dataInicio, dataTermino, periodo]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const token = localStorage.getItem("access");
-
+    
+        if (isSalaReservada) return;
+    
+        const payload = {
+            dataInicio,
+            dataTermino,
+            periodo,
+            salaReservada: parseInt(salaReservada),
+            professor: parseInt(professor),
+            disciplina: parseInt(disciplina)
+        };
+    
+        console.log("Enviando dados para o backend:", payload); // <-- VERIFICAR
+    
         try {
             const response = await axios.put(
                 `http://localhost:8000/api/ambiente/${item.id}`,
-                {
-                    dataInicio,
-                    dataTermino,
-                    periodo,
-                    salaReservada,
-                    professor,
-                    disciplina
-                },
+                payload,
                 {
                     headers: { Authorization: `Bearer ${token}` }
                 }
             );
+            console.log("Resposta do backend:", response.data); // <-- VERIFICAR
             onConfirm(response.data);
             onClose();
         } catch (error) {
-            console.error('Erro ao editar ambiente', error.response || error);
+            console.error("Erro na requisição:", error);
+            console.error("Resposta do erro:", error.response?.data);
+        
+            const erroData = error.response?.data;
+            let msg = "Erro ao editar reserva.";
+        
+            if (erroData) {
+                if (erroData.non_field_errors) {
+                    msg = erroData.non_field_errors.join(', ');
+                } else if (erroData.detail) {
+                    msg = erroData.detail;
+                } else if (erroData.erro) {
+                    msg = erroData.erro;
+                } else if (erroData.professor) {
+                    msg = erroData.professor;
+                } else if (erroData.salaReservada) {
+                    msg = erroData.salaReservada;
+                } else if (erroData.disciplina) {
+                    msg = erroData.disciplina;
+                }
+            }
+        
+            setMensagemErro(msg);
+            setErroModalAberto(true);
         }
-    };
+    }        
+    
 
     if (!isOpen) return null;
 
@@ -164,9 +201,7 @@ const EditarAmbiente = ({ isOpen, onClose, onConfirm, item }) => {
                         >
                             <option value="">Selecione um período</option>
                             {periodosDisponiveis.map((p) => (
-                                <option key={p.id} value={p.nome}>
-                                    {p.nome}
-                                </option>
+                                <option key={p.id} value={p.nome}>{p.nome}</option>
                             ))}
                         </select>
 
@@ -180,9 +215,7 @@ const EditarAmbiente = ({ isOpen, onClose, onConfirm, item }) => {
                         >
                             <option value="">Selecione uma sala</option>
                             {salas.map((s) => (
-                                <option key={s.id} value={s.id}>
-                                    {s.nome}
-                                </option>
+                                <option key={s.id} value={s.id}>{s.nome}</option>
                             ))}
                         </select>
 
@@ -196,9 +229,7 @@ const EditarAmbiente = ({ isOpen, onClose, onConfirm, item }) => {
                         >
                             <option value="">Selecione um professor</option>
                             {professores.map((p) => (
-                                <option key={p.id} value={p.id}>
-                                    {p.username}
-                                </option>
+                                <option key={p.id} value={p.id}>{p.username}</option>
                             ))}
                         </select>
 
@@ -212,22 +243,33 @@ const EditarAmbiente = ({ isOpen, onClose, onConfirm, item }) => {
                         >
                             <option value="">Selecione uma disciplina</option>
                             {disciplinas.map((d) => (
-                                <option key={d.id} value={d.id}>
-                                    {d.nome}
-                                </option>
+                                <option key={d.id} value={d.id}>{d.nome}</option>
                             ))}
                         </select>
                     </div>
 
-                    <div className={estilos.botoes}>
-                        <button type="submit" className={estilos.salvar}>
-                            Salvar
-                        </button>
-                        <button type="button" onClick={onClose} className={estilos.cancelar}>
+                    <div className={estilos.buttons}>
+
+                        <button type="button" onClick={onClose} className={estilos.cancelButton}>
                             Cancelar
                         </button>
+
+                        <button
+                            type="submit"
+                            className={`${estilos.confirmButton} ${isSalaReservada ? estilos.botaoIndisponivel : ''}`}
+                            disabled={isSalaReservada}>
+                            Salvar
+                        </button>
+                       
                     </div>
                 </form>
+
+                <Aviso
+                    isOpen={erroModalAberto}
+                    onClose={() => setErroModalAberto(false)}
+                    titulo="Erro ao editar ambiente"
+                    mensagem={mensagemErro}
+                />
             </div>
         </div>
     );

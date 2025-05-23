@@ -1,58 +1,105 @@
-import { Link } from "react-router-dom";  // Importe o Link para navegação
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import estilos from './Menu.module.css';
 import professoresIcon from '../assets/professor.png';
 import gestoresIcon from '../assets/gestor.png';
 import disciplinaIcon from '../assets/disciplina.png';
 import salaIcon from '../assets/ambiente.png';
 import ambienteIcon from '../assets/school.png';
+import axios from "axios";
 
 export function Menu() {
-    return (
-        <div className={estilos.conteiner}>
-            <div className={estilos.cardContainer}>
-            <h2 className={estilos.titulo}>Categorias</h2>
+  const [categoriaUsuario, setCategoriaUsuario] = useState('');
 
-                    <div className={estilos.grid}>
+  function parseJwt(token) {
+    if (!token) return null;
+    try {
+      const base64 = token.split('.')[1];
+      const jsonPayload = atob(base64);
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      console.error("Erro ao decodificar token:", e);
+      return null;
+    }
+  }
 
-                        <Link to="/professores">
-                            <div className={estilos.item}>
-                                <img src={professoresIcon} alt="Professores" />
-                                <span>Professores</span>
-                            </div> 
-                        </Link>
-                        
-                        <Link to="/gestores">
-                            <div className={estilos.item}>
-                                <img src={gestoresIcon} alt="Gestores" />
-                                <span>Gestores</span>
-                            </div>
-                        </Link>
-                    
+  useEffect(() => {
+    const token = localStorage.getItem("access");
 
-                        <Link to="/disciplinas" className={estilos.link}>
-                            <div className={estilos.item}>
-                                <img src={disciplinaIcon} alt="Disciplina" />
-                                <span>Disciplinas</span>
-                            </div>
-                        </Link>
+    if (!token) {
+      console.log("Token não encontrado");
+      return;
+    }
 
-                        <Link to="/ambientes">
-                            <div className={estilos.item}>
-                                <img src={ambienteIcon} alt="Ambiente" />
-                                <span>Reserva de Ambientes</span>
-                            </div>
-                        </Link>
+    const decoded = parseJwt(token);
+    if (!decoded || !decoded.user_id) {
+      console.log("Token inválido ou user_id não encontrado");
+      return;
+    }
 
-                        <Link to="/salas">
-                            <div className={estilos.item}>
-                                <img src={salaIcon} alt="Sala" />
-                                <span>Salas</span>
-                            </div>
-                        </Link>
+    const userId = decoded.user_id;
 
-                    </div>
-        
+    axios.get(`http://localhost:8000/api/funcionario/${userId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then((res) => {
+      console.log("Resposta da API funcionario:", res.data);
+  
+      setCategoriaUsuario(res.data.categoria || '');
+    
+    })
+    .catch((err) => {
+      console.error("Erro ao buscar categoria do usuário", err.response || err);
+    });
+  }, []);
+
+  
+  return (
+    <div className={estilos.conteiner}>
+      <div className={estilos.cardContainer}>
+        <h2 className={estilos.titulo}>Categorias</h2>
+
+        <div className={estilos.grid}>
+          <Link to="/professores">
+            <div className={estilos.item}>
+              <img src={professoresIcon} alt="Professores" />
+              <span>Professores</span>
             </div>
+          </Link>
+
+          {categoriaUsuario === 'G' && (
+            <Link to="/gestores">
+              <div className={estilos.item}>
+                <img src={gestoresIcon} alt="Gestores" />
+                <span>Gestores</span>
+              </div>
+            </Link>
+          )}
+
+          <Link to="/disciplinas">
+            <div className={estilos.item}>
+              <img src={disciplinaIcon} alt="Disciplina" />
+              <span>Disciplinas</span>
+            </div>
+          </Link>
+
+          <Link to="/ambientes">
+            <div className={estilos.item}>
+              <img src={ambienteIcon} alt="Ambiente" />
+              <span>Reserva de Ambientes</span>
+            </div>
+          </Link>
+
+          {categoriaUsuario === 'G' && (
+            <Link to="/salas">
+              <div className={estilos.item}>
+                <img src={salaIcon} alt="Sala" />
+                <span>Salas</span>
+              </div>
+            </Link>
+          )}
         </div>
-    );
+      </div>
+    </div>
+  );
 }
