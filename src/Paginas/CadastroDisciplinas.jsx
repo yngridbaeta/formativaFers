@@ -1,16 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import estilos from './Cadastros.module.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 
 export function CadastroDisciplina() {
-    const [nome, setNome] = useState('');
-    const [curso, setCurso] = useState('');
-    const [cargaHoraria, setCargaHoraria] = useState('');
-    const [descricao, setDescricao] = useState('');
-    const [professor, setProfessor] = useState('');
     const [professores, setProfessores] = useState([]);
     const navigate = useNavigate();
+
+    const { register, handleSubmit, reset } = useForm();
 
     useEffect(() => {
         const fetchProfessores = async () => {
@@ -19,13 +17,11 @@ export function CadastroDisciplina() {
 
                 const response = await axios.get('http://127.0.0.1:8000/api/funcionario/', {
                     headers: {
-                        Authorization: `Bearer ${token}` // Passando o token no header
+                        Authorization: `Bearer ${token}`
                     }
                 });
 
-                // criando uma variavel para filtrar apenas gestores, e nao professores + gestores
                 const professoresFiltrados = response.data.filter(professor => professor.categoria === 'P');
-
                 setProfessores(professoresFiltrados);
             } catch (error) {
                 console.error('Erro ao buscar professores:', error);
@@ -35,82 +31,71 @@ export function CadastroDisciplina() {
         fetchProfessores();
     }, []);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-      
+    const onSubmit = async (data) => {
         const token = localStorage.getItem("access");
-      
+
         try {
             await axios.post(
                 'http://localhost:8000/api/disciplina/',
                 {
-                nome,
-                curso,
-                cargaHoraria,
-                descricao,
-                professor
+                    nome: data.nome,
+                    curso: data.curso,
+                    cargaHoraria: data.cargaHoraria,
+                    descricao: data.descricao,
+                    professor: data.professor
                 },
                 {
-                headers: {
-                    Authorization: `Bearer ${token}`  // <- Aqui está o token
-                }
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 }
             );
-      
-          navigate('/disciplinas');
+            reset();
+            navigate('/disciplinas');
         } catch (error) {
-          console.error('Erro ao cadastrar disciplina:', error);
+            console.error('Erro ao cadastrar disciplina:', error);
         }
-      };
+    };
 
     return (
         <div className={estilos.container}>
-            <form className={estilos.formulario} onSubmit={handleSubmit}>
+            <form className={estilos.formulario} onSubmit={handleSubmit(onSubmit)}>
                 <h2 className={estilos.titulo}>Cadastro Disciplina</h2>
 
                 <input
                     type="text"
                     placeholder="Nome da Disciplina"
-                    value={nome}
-                    onChange={(e) => setNome(e.target.value)}
+                    {...register('nome', { required: true })}
                     className={estilos.input}
-                    required
                 />
                 <input
                     type="text"
                     placeholder="Curso"
-                    value={curso}
-                    onChange={(e) => setCurso(e.target.value)}
+                    {...register('curso', { required: true })}
                     className={estilos.input}
-                    required
                 />
                 <input
                     type="number"
                     placeholder="Carga Horária"
-                    value={cargaHoraria}
-                    onChange={(e) => setCargaHoraria(e.target.value)}
+                    {...register('cargaHoraria', { required: true, valueAsNumber: true })}
                     className={estilos.input}
-                    required
                 />
                 <input
                     type="text"
-                    placeholder='Descrição'
-                    value={descricao}
-                    onChange={(e) => setDescricao(e.target.value)}
+                    placeholder="Descrição"
+                    {...register('descricao', { required: true })}
                     className={estilos.input}
-                    required
                 />
                 <select
-                    value={professor}
-                    onChange={(e) => setProfessor(e.target.value)}
+                    {...register('professor', { required: true })}
                     className={estilos.input}
-                    required>
-                        
+                >
                     <option value="">Selecione um professor</option>
                     {professores.map((p) => (
                         <option key={p.id} value={p.id}>{p.username}</option>
                     ))}
                 </select>
+
                 <div className={estilos.divBotao}>
                     <button type="submit" className={estilos.botao}>Cadastrar Disciplina</button>
                 </div>

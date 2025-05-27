@@ -1,23 +1,33 @@
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
 import estilos from './Cadastros.module.css';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Aviso from "../Componentes/Aviso";
 
 export function CadastroAmbiente() {
-    const [dataInicio, setDataInicio] = useState('');
-    const [dataTermino, setDataTermino] = useState('');
-    const [periodo, setPeriodo] = useState('');
-    const [salaReservada, setSalaReservada] = useState('');
-    const [professor, setProfessor] = useState('');
-    const [disciplina, setDisciplina] = useState('');
+    const {
+        register,
+        handleSubmit,
+        watch,
+        setValue,
+    } = useForm();
+
     const [erroModalAberto, setErroModalAberto] = useState(false);
     const [mensagemErro, setMensagemErro] = useState('');
     const [professores, setProfessores] = useState([]);
     const [salas, setSalas] = useState([]);
     const [disciplinas, setDisciplinas] = useState([]);
-    const [isSalaReservada, setIsSalaReservada] = useState(false); 
+    const [isSalaReservada, setIsSalaReservada] = useState(false);
+
     const navigate = useNavigate();
+
+    const dataInicio = watch("dataInicio");
+    const dataTermino = watch("dataTermino");
+    const periodo = watch("periodo");
+    const salaReservada = watch("salaReservada");
+    const professor = watch("professor");
+
     const disciplinasFiltradas = disciplinas.filter(d => d.professor === Number(professor));
 
     const verificarReserva = async () => {
@@ -29,35 +39,33 @@ export function CadastroAmbiente() {
                         Authorization: `Bearer ${token}`
                     }
                 });
-    
+
                 const isDataValida = new Date(dataInicio) < new Date(dataTermino);
-    
+
                 if (!isDataValida) {
                     setMensagemErro("A data de início não pode ser posterior à data de término.");
                     setErroModalAberto(true);
                     return;
                 }
-    
-                const salaReservadaNoPeriodo = response.data.some(reserva => 
+
+                const salaReservadaNoPeriodo = response.data.some(reserva =>
                     reserva.salaReservada === parseInt(salaReservada) &&
                     (
-                        (new Date(dataInicio).toDateString() === new Date(reserva.dataInicio).toDateString()) && 
+                        (new Date(dataInicio).toDateString() === new Date(reserva.dataInicio).toDateString()) &&
                         reserva.periodo === periodo
                     )
                 );
-    
-                setIsSalaReservada(salaReservadaNoPeriodo); 
+
+                setIsSalaReservada(salaReservadaNoPeriodo);
             } catch (error) {
                 console.error('Erro ao verificar reserva de sala:', error);
             }
         }
     };
-    
-    
 
     useEffect(() => {
         verificarReserva();
-    }, [salaReservada, dataInicio, dataTermino, periodo]); 
+    }, [salaReservada, dataInicio, dataTermino, periodo]);
 
     useEffect(() => {
         const fetchProfessores = async () => {
@@ -69,13 +77,12 @@ export function CadastroAmbiente() {
                     }
                 });
 
-                const professoresFiltrados = response.data.filter(professor => professor.categoria === 'P');
+                const professoresFiltrados = response.data.filter(prof => prof.categoria === 'P');
                 setProfessores(professoresFiltrados);
             } catch (error) {
                 console.error('Erro ao buscar professores:', error);
             }
         };
-
         fetchProfessores();
     }, []);
 
@@ -88,10 +95,9 @@ export function CadastroAmbiente() {
                         Authorization: `Bearer ${token}`
                     }
                 });
-
                 setSalas(response.data);
             } catch (error) {
-                console.error('Erro ao buscar salas', error);
+                console.error('Erro ao buscar salas:', error);
             }
         };
         fetchSalas();
@@ -108,15 +114,14 @@ export function CadastroAmbiente() {
                 });
                 setDisciplinas(response.data);
             } catch (error) {
-                console.error('Erro ao buscar disciplinas', error);
+                console.error('Erro ao buscar disciplinas:', error);
             }
         };
         fetchDisciplinas();
     }, []);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
+    const onSubmit = async (data) => {
+        const { dataInicio, dataTermino, periodo, salaReservada, professor, disciplina } = data;
         const token = localStorage.getItem("access");
 
         try {
@@ -138,7 +143,7 @@ export function CadastroAmbiente() {
             );
             navigate('/ambientes');
         } catch (error) {
-            const msg = 
+            const msg =
                 error.response?.data?.erro ||
                 error.response?.data?.detail ||
                 "Erro ao cadastrar reserva.";
@@ -149,32 +154,26 @@ export function CadastroAmbiente() {
 
     return (
         <div className={estilos.container}>
-            <form className={estilos.formulario} onSubmit={handleSubmit}>
+            <form className={estilos.formulario} onSubmit={handleSubmit(onSubmit)}>
                 <h2>Reserva de Ambiente</h2>
 
-                <label className={estilos.periodoLabel}>Selecione o dia de inicio</label>
+                <label className={estilos.periodoLabel}>Selecione o dia de início</label>
                 <input
                     type="date"
-                    value={dataInicio}
-                    onChange={(e) => setDataInicio(e.target.value)}
+                    {...register("dataInicio", { required: true })}
                     className={estilos.input}
-                    required
                 />
 
                 <label className={estilos.periodoLabel}>Selecione o dia de fim</label>
                 <input
                     type="date"
-                    value={dataTermino}
-                    onChange={(e) => setDataTermino(e.target.value)}
+                    {...register("dataTermino", { required: true })}
                     className={estilos.input}
-                    required
                 />
 
                 <select
-                    value={salaReservada}
-                    onChange={(e) => setSalaReservada(e.target.value)}
+                    {...register("salaReservada", { required: true })}
                     className={estilos.input}
-                    required
                 >
                     <option value="">Selecione uma sala</option>
                     {salas.map((s) => (
@@ -182,28 +181,25 @@ export function CadastroAmbiente() {
                     ))}
                 </select>
 
-                
                 <div className={estilos.periodoContainer}>
                     <label className={estilos.periodoLabel}>Selecione o período:</label>
                     <div className={estilos.botoesPeriodo}>
-                            {["Manhã", "Tarde", "Noite"].map((opcao) => (
+                        {["Manhã", "Tarde", "Noite"].map((opcao) => (
                             <button
                                 type="button"
                                 key={opcao}
                                 className={`${estilos.botaoPeriodo} ${periodo === opcao ? estilos.ativo : ''}`}
-                                onClick={() => setPeriodo(opcao)}>
+                                onClick={() => setValue("periodo", opcao)}
+                            >
                                 {opcao}
                             </button>
-                         ))}
+                        ))}
                     </div>
                 </div>
-            
 
                 <select
-                    value={professor}
-                    onChange={(e) => setProfessor(e.target.value)}
+                    {...register("professor", { required: true })}
                     className={estilos.input}
-                    required
                 >
                     <option value="">Selecione um professor</option>
                     {professores.map((p) => (
@@ -212,10 +208,9 @@ export function CadastroAmbiente() {
                 </select>
 
                 <select
-                    value={disciplina}
-                    onChange={(e) => setDisciplina(e.target.value)}
+                    {...register("disciplina", { required: true })}
                     className={estilos.input}
-                    required>
+                >
                     <option value="">Selecione uma disciplina</option>
                     {disciplinasFiltradas.map((d) => (
                         <option key={d.id} value={d.id}>{d.nome}</option>
@@ -226,7 +221,8 @@ export function CadastroAmbiente() {
                     <button
                         type="submit"
                         className={`${estilos.botao} ${isSalaReservada ? estilos.botaoIndisponivel : ''}`}
-                        disabled={isSalaReservada}>
+                        disabled={isSalaReservada}
+                    >
                         Reservar Ambiente
                     </button>
                 </div>

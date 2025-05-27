@@ -2,8 +2,9 @@ import { useState } from 'react';
 import estilos from './Cadastros.module.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
+import Aviso from '../Componentes/Aviso';
 export function CadastroProfessor() {
+    // seus estados existentes
     const [nome, setNome] = useState('');
     const [ni, setNi] = useState('');
     const [email, setEmail] = useState('');
@@ -13,36 +14,94 @@ export function CadastroProfessor() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
+    // estados para o modal de erro
+    const [erroModalAberto, setErroModalAberto] = useState(false);
+    const [mensagemErro, setMensagemErro] = useState('');
 
     const navigate = useNavigate();
 
+    const abrirModalErro = (msg) => {
+        setMensagemErro(msg);
+        setErroModalAberto(true);
+    };
+
+    const fecharModalErro = () => {
+        setErroModalAberto(false);
+        setMensagemErro('');
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
-        const token = localStorage.getItem("access");
-    
-        // Convertendo 'ni' para inteiro
-        const niNumber = parseInt(ni, 10);
-    
-        // Verificando se a conversão foi bem-sucedida
-        if (isNaN(niNumber)) {
-            console.error("O número de identificação (NI) é inválido.");
+
+        const token = localStorage.getItem('access');
+
+        if (!username || !password || !nome || !ni || !email || !telefone || !dataNascimento || !dataContratacao) {
+            abrirModalErro('Preencha todos os campos obrigatórios.');
             return;
         }
-    
-        // Adicionando um log para verificar os dados
-        console.log("Dados enviados:", {
-            username,
-            nome,
-            ni: niNumber, // Envia como número
-            categoria: 'P',
-            email,
-            telefone,
-            dataNascimento,
-            dataContratacao
-        });
-    
+
+        if (password.length < 6) {
+            abrirModalErro('A senha deve ter no mínimo 6 caracteres.');
+            return;
+        }
+
+        const telefoneRegex = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
+        if (!telefoneRegex.test(telefone)) {
+            abrirModalErro('Telefone inválido. Ex: (11)91234-5678');
+            return;
+        }
+
+        // verificando datas
+        const hoje = new Date();
+        const nascimento = new Date(dataNascimento);
+        const contratacao = new Date(dataContratacao);
+        const idade = hoje.getFullYear() - nascimento.getFullYear();
+
+        if (idade < 18) {
+            abrirModalErro('O funcionário deve ter pelo menos 18 anos.');
+            return;
+        }
+
+        if (nascimento >= hoje) {
+            abrirModalErro('Data de nascimento deve ser uma data passada.');
+            return;
+        }
+
+        if (contratacao > hoje) {
+            abrirModalErro('Data de contratação não pode ser uma data futura.');
+            return;
+        }
+
+        if (contratacao < nascimento) {
+            abrirModalErro('Data de contratação não pode ser anterior à data de nascimento.');
+            return;
+        }
+
+        try {
+            const response = await axios.get(`http://localhost:8000/api/usuarios/?username=${username}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (response.data.existe) {
+                abrirModalErro('Nome de usuário já existe.');
+                return;
+            }
+
+            // Verifica se NI já existe
+            const responseNi = await axios.get(`http://localhost:8000/api/funcionario/?ni=${ni}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (responseNi.data.existe) {
+                abrirModalErro('Número de Identificação (NI) já está cadastrado.');
+                return;
+            }
+        } catch (error) {
+            abrirModalErro('Erro ao verificar dados no servidor.');
+            console.error('Erro na verificação:', error);
+            return;
+        }
+
         try {
             await axios.post(
                 'http://localhost:8000/api/funcionario/',
@@ -50,33 +109,50 @@ export function CadastroProfessor() {
                     username,
                     password,
                     nome,
-                    ni,
+                    ni: parseInt(ni, 10),
                     categoria: 'P',
                     email,
                     telefone,
                     dataNascimento,
-                    dataContratacao
+                    dataContratacao,
                 },
                 {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
+                    headers: { Authorization: `Bearer ${token}` },
                 }
             );
     
             navigate('/professores');
         } catch (error) {
-            console.error('Erro ao cadastrar professor', error);
+            console.error('Erro ao cadastrar professor (detalhes do backend):', error.response?.data);
+        
+            let mensagem = 'Erro ao cadastrar professor. Verifique os dados.';
+            if (error.response && error.response.data) {
+                const data = error.response.data;
+        
+                if (data.ni) {
+                    mensagem = data.ni.join(' ');
+                } else if (data.username) {
+                    mensagem = data.username.join(' ');
+                } else if (data.password) {
+                    mensagem = data.password.join(' ');
+                } else if (typeof data.detail === 'string') {
+                    mensagem = data.detail;
+                } else {
+                    mensagem = JSON.stringify(data);
+                }
+            }
+            abrirModalErro(mensagem);
         }
     };
-    
+
 
     return (
         <div className={estilos.container}>
             <form className={estilos.formulario} onSubmit={handleSubmit}>
                 <h2 className={estilos.titulo}>Cadastro de Professor</h2>
 
-                <input 
+                <label>Nome de Usuário</label>
+                <input
                     type="text"
                     placeholder="Nome de usuário"
                     value={username}
@@ -85,7 +161,8 @@ export function CadastroProfessor() {
                     required
                 />
 
-                <input 
+                <label>Senha</label>
+                <input
                     type="password"
                     placeholder="Senha"
                     value={password}
@@ -94,7 +171,8 @@ export function CadastroProfessor() {
                     required
                 />
 
-                <input 
+                <label>Nome do Professor</label>
+                <input
                     type="text"
                     placeholder="Nome do professor"
                     value={nome}
@@ -103,7 +181,8 @@ export function CadastroProfessor() {
                     required
                 />
 
-                <input 
+                <label>Número de Identificação</label>
+                <input
                     type="number"
                     placeholder="Número de Identificação (NI)"
                     value={ni}
@@ -111,8 +190,8 @@ export function CadastroProfessor() {
                     className={estilos.input}
                     required
                 />
-
-                <input 
+                <label>Endereço de E-mail</label>
+                <input
                     type="email"
                     placeholder="Email"
                     value={email}
@@ -120,8 +199,8 @@ export function CadastroProfessor() {
                     className={estilos.input}
                     required
                 />
-
-                <input 
+                <label>Telefone</label>
+                <input
                     type="text"
                     placeholder="Telefone"
                     value={telefone}
@@ -130,7 +209,8 @@ export function CadastroProfessor() {
                     required
                 />
 
-                <input 
+                <label>Data de Nascimento</label>
+                <input
                     type="date"
                     placeholder="Data de Nascimento"
                     value={dataNascimento}
@@ -139,7 +219,8 @@ export function CadastroProfessor() {
                     required
                 />
 
-                <input 
+                <label>Data de Contratação</label>
+                <input
                     type="date"
                     placeholder="Data de Contratação"
                     value={dataContratacao}
@@ -148,10 +229,17 @@ export function CadastroProfessor() {
                     required
                 />
 
-                 <div className={estilos.divBotao}>
+                <div className={estilos.divBotao}>
                     <button type="submit" className={estilos.botao}>Cadastrar Professor</button>
                 </div>
             </form>
+
+            <Aviso
+                isOpen={erroModalAberto}
+                onClose={fecharModalErro}
+                titulo="Erro"
+                mensagem={mensagemErro}
+            />
         </div>
     );
 }
